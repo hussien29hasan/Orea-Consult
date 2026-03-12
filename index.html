@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+
+
+  
+<head>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+background:#ffffff;
+color:#1A1A1A;
+font-family:'Poppins',sans-serif;
+margin:0;
+}
+
+.quiz-container{
+max-width:650px;
+margin:auto;
+padding:60px 30px;
+}
+
+.hero{
+text-align:center;
+margin-bottom:40px;
+}
+
+.hero-title{
+font-family:'Playfair Display',serif;
+font-size:36px;
+margin-bottom:10px;
+}
+
+.hero-sub{
+font-size:14px;
+color:#666;
+}
+
+.start-btn{
+margin-top:25px;
+padding:12px 26px;
+border:1px solid #1A1A1A;
+background:#1A1A1A;
+color:white;
+cursor:pointer;
+}
+
+.progress-bar{
+height:2px;
+background:#eee;
+margin-bottom:35px;
+}
+
+.progress{
+height:2px;
+background:#1A1A1A;
+width:0%;
+transition:width .5s ease;
+}
+
+.question{
+font-size:21px;
+font-weight:500;
+margin-bottom:25px;
+}
+
+.answers button{
+display:block;
+width:100%;
+border:1px solid #EAEAEA;
+background:white;
+padding:16px;
+margin-bottom:12px;
+font-size:14px;
+font-weight:300;
+cursor:pointer;
+text-align:left;
+transition:all .25s ease;
+}
+
+.answers button:hover{
+background:#F5F5F5;
+border-color:#ddd;
+}
+
+.fade{
+animation:fade .4s ease;
+}
+
+@keyframes fade{
+from{opacity:0}
+to{opacity:1}
+}
+
+.result-card{
+border:1px solid #eee;
+padding:40px;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,0.04);
+}
+
+.result-title{
+font-family:'Playfair Display',serif;
+font-size:34px;
+margin-bottom:15px;
+}
+
+.result-text{
+font-size:14px;
+line-height:1.7;
+color:#444;
+}
+
+.result-buttons{
+margin-top:25px;
+display:flex;
+justify-content:center;
+gap:12px;
+}
+
+.btn{
+padding:11px 20px;
+border:1px solid #1A1A1A;
+background:#1A1A1A;
+color:white;
+cursor:pointer;
+text-decoration:none;
+}
+
+.btn.secondary{
+background:white;
+color:#1A1A1A;
+}
+
+.loader{
+text-align:center;
+font-size:14px;
+color:#666;
+padding:40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+<div id="quiz"></div>
+</div>
+
+<script>
+
+let started=false
+let path=null
+let step=0
+
+let scores={
+oro:0,
+verin:0,
+meli:0,
+aure:0,
+elia:0,
+lora:0
+}
+
+const fragranceLinks={
+oro:"#",
+verin:"#",
+meli:"#",
+aure:"#",
+elia:"#",
+lora:"#"
+}
+
+const questions=[
+
+{
+q:"Whom are we dressing today?",
+answers:["Him","Her"]
+},
+
+{
+q:"Which feeling describes you the most?",
+answers:[
+"Power & confidence",
+"Warmth & attraction",
+"Quiet elegance",
+"Mystery & uniqueness"
+]
+},
+
+{
+q:"When do you usually wear perfume?",
+answers:[
+"In the morning",
+"During nights out",
+"For special occasions",
+"Every occasion"
+]
+},
+
+{
+q:"How would you describe your style?",
+answers:[
+"Bold",
+"Classic",
+"Minimal & Clean",
+"Unique & Different"
+]
+},
+
+{
+q:"What impression do you want your fragrance to leave?",
+answers:[
+"A strong presence",
+"Elegance",
+"Warm attraction",
+"Mystery"
+]
+},
+
+{
+q:"Which place feels closest to your personality?",
+answers:[
+"Busy nightlife city",
+"Elegant dinner",
+"Calm cozy place",
+"Trip or adventure"
+]
+},
+
+{
+q:"Choose the description closest to you",
+answers:[
+"Natural leader",
+"Elegance & simplicity",
+"Warm person",
+"Love standing out"
+]
+}
+
+]
+
+function startQuiz(){
+started=true
+step=0
+render()
+}
+
+function render(){
+
+if(!started){
+
+document.getElementById("quiz").innerHTML=`
+
+<div class="hero fade">
+
+<div class="hero-title">The OREA Consult</div>
+
+<div class="hero-sub">
+Answer a few questions and discover the fragrance that matches your personality.
+</div>
+
+<button class="start-btn" onclick="startQuiz()">Start the Experience</button>
+
+</div>
+`
+
+return
+}
+
+let q=questions[step]
+
+let percent=(step/(questions.length-1))*100
+
+let html=`
+<div class="progress-bar">
+<div class="progress" style="width:${percent}%"></div>
+</div>
+`
+
+html+=`<div class="question fade">${q.q}</div>`
+html+=`<div class="answers fade">`
+
+q.answers.forEach((a,i)=>{
+html+=`<button onclick="answer(${i})">${a}</button>`
+})
+
+html+=`</div>`
+
+document.getElementById("quiz").innerHTML=html
+
+}
+
+function answer(i){
+
+if(step==0){
+
+path=i==0?"him":"her"
+
+}else{
+
+applyPoints(step,i)
+
+}
+
+step++
+
+if(step<questions.length){
+render()
+}else{
+loading()
+}
+
+}
+
+function loading(){
+
+document.getElementById("quiz").innerHTML=`<div class="loader fade">Finding your perfect fragrance...</div>`
+
+setTimeout(showResult,1200)
+
+}
+
+function applyPoints(question,answer){
+
+if(path=="him"){
+
+const map={
+1:[{verin:2,oro:1},{oro:2,verin:2,meli:1},{meli:2,oro:1},{aure:2,oro:1}],
+2:[{oro:2,meli:2,verin:1},{oro:2,verin:1},{aure:2,meli:1},{meli:2,oro:1}],
+3:[{verin:2},{oro:2},{meli:2},{aure:2}],
+4:[{verin:2},{oro:2},{meli:2},{aure:2}],
+5:[{oro:2},{verin:2},{meli:2},{aure:2,meli:1}],
+6:[{verin:2,oro:1},{oro:2},{meli:2,oro:1},{aure:2}]
+}
+
+Object.entries(map[question][answer]).forEach(([k,v])=>{
+scores[k]+=v
+})
+
+}
+
+if(path=="her"){
+
+const map={
+1:[{elia:2,lora:1},{meli:2,lora:2,elia:1},{lora:2,meli:2},{aure:2,lora:1}],
+2:[{elia:2,aure:1},{elia:2,lora:1},{lora:2,meli:2},{lora:2,aure:1}],
+3:[{elia:2},{lora:2,meli:1},{lora:2},{aure:2}],
+4:[{elia:2,lora:1},{elia:2,lora:2},{lora:2,meli:1},{aure:2,elia:1}],
+5:[{elia:2,lora:1},{elia:2,lora:2},{lora:2,meli:1},{aure:1,meli:2}],
+6:[{elia:2,lora:1},{lora:2,meli:1},{meli:2,lora:1,elia:1},{aure:2,elia:1}]
+}
+
+Object.entries(map[question][answer]).forEach(([k,v])=>{
+scores[k]+=v
+})
+
+}
+
+}
+
+function showResult(){
+
+let top=Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b)
+
+const texts={
+
+oro:`<div class="result-title">ORO</div>
+You have a confident and grounded personality. You appreciate clarity, presence, and strength in the way you present yourself to the world. You are someone who doesn't try to impress loudly — your presence speaks for itself. People often notice your calm confidence and the way you carry yourself naturally. Oro reflects that balance of strength and elegance.`,
+
+verin:`<div class="result-title">VERIN</div>
+You have a bold and expressive personality. You enjoy standing out and leaving a memorable impression wherever you go. You are driven, confident, and not afraid to show your presence. Your energy naturally attracts attention and curiosity. Verin was designed for personalities that carry strength and character.`,
+
+meli:`<div class="result-title">MELI</div>
+You have a warm and approachable personality. You value comfort, authenticity, and the simple elegance of everyday moments. People often feel relaxed and welcomed around you. Your style is effortless, yet memorable. MELI reflects that natural warmth and soft confidence.`,
+
+aure:`<div class="result-title">AURE</div>
+You have a unique and intriguing personality. You are naturally drawn to things that are different, expressive, and a little mysterious. You don't follow trends — you create your own path. Your presence leaves people curious to know more. AURE captures that sense of individuality and depth.`,
+
+elia:`<div class="result-title">ELIA</div>
+You have a strong yet elegant personality. You know how to balance confidence with grace. Your presence feels refined and noticeable without being overwhelming. You appreciate beauty, elegance, and thoughtful details. Elia was created to reflect that refined feminine strength.`,
+
+lora:`<div class="result-title">LORA</div>
+You have a naturally elegant personality. You value harmony, simplicity, and timeless style. Your presence feels calm, graceful, and effortlessly attractive. People often associate you with sophistication and warmth. Laura reflects that timeless elegance.`
+
+}
+
+let html=`
+
+<div class="result-card fade">
+
+<div class="result-title">${top.toUpperCase()}</div>
+
+<div class="result-text">
+${texts[top]}
+</div>
+
+<div class="result-buttons">
+
+<a class="btn" href="${fragranceLinks[top]}">View Fragrance</a>
+
+<button class="btn secondary" onclick="location.reload()">Retake Test</button>
+
+</div>
+
+</div>
+`
+
+document.getElementById("quiz").innerHTML=html
+
+}
+
+render()
+
+</script>
+
+</body>
+</html>
